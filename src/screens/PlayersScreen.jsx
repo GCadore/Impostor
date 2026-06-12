@@ -25,6 +25,7 @@ export function PlayersScreen({ state, actions }) {
     event?.preventDefault();
     actions.addPlayer();
     if (shouldRefocusInput()) setTimeout(() => inputRef.current?.focus(), 50);
+    else closeKeyboard();
   }
 
   function goSettings() {

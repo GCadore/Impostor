@@ -1236,12 +1236,6 @@ input:focus {
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.28);
 }
 
-@media (pointer: coarse) {
-  .players-screen:focus-within .fixed-bottom {
-    display: none;
-  }
-}
-
 @media (max-width: 360px) {
   .home-screen,
   .turn-screen {
