@@ -24,6 +24,11 @@ export function CaseCover({ caseId, caseDate, playerCount, impostorCount }) {
 }
 
 export function CategorySelector({ selectedCategory, onSelect }) {
+  const selectCategory = (category) => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    onSelect(category);
+  };
+
   return (
     <div className="category-grid">
       {Object.keys(wordBank).map((category) => {
@@ -32,7 +37,7 @@ export function CategorySelector({ selectedCategory, onSelect }) {
           <motion.button
             className={`category-card ${selected ? 'selected' : ''}`}
             key={category}
-            onClick={() => onSelect(category)}
+            onClick={() => selectCategory(category)}
             style={{ '--accent': categoryMeta[category].color }}
             whileHover={{ borderColor: selected ? categoryMeta[category].color : '#6b6350' }}
             whileTap={{ scale: 0.98 }}
@@ -50,6 +55,10 @@ export function CategorySelector({ selectedCategory, onSelect }) {
 
 export function DifficultySelector({ selectedCategory, selectedDifficulty, recentPairKeys, onSelect }) {
   const stats = getSetupStats(wordBank, selectedCategory, selectedDifficulty, recentPairKeys);
+  const selectDifficulty = (difficulty) => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    onSelect(difficulty);
+  };
 
   return (
     <>
@@ -58,7 +67,7 @@ export function DifficultySelector({ selectedCategory, selectedDifficulty, recen
           <motion.button
             key={key}
             className={`difficulty-card ${selectedDifficulty === key ? 'selected' : ''}`}
-            onClick={() => onSelect(key)}
+            onClick={() => selectDifficulty(key)}
             whileTap={{ scale: 0.97 }}
           >
             <strong>{meta.label}</strong>

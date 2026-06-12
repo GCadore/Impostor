@@ -4,6 +4,11 @@ import { ScreenHeader, SectionLabel } from '../components/ScreenHeader.jsx';
 import { CaseCover, CategorySelector, DifficultySelector, HapticsToggle, ImpostorCounter } from '../components/SettingsParts.jsx';
 
 export function SettingsScreen({ state, actions }) {
+  function startGame() {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    actions.startGame();
+  }
+
   return (
     <motion.section className="screen settings-screen" {...pageMotion}>
       <ScreenHeader className="settings-header" eyebrow="PASSO 02 / 02" title="Capa do Caso" onBack={actions.goBack} />
@@ -33,7 +38,7 @@ export function SettingsScreen({ state, actions }) {
       <HapticsToggle enabled={state.haptics} onToggle={actions.toggleHaptics} />
 
       <div className="spacer" />
-      {state.players.length >= 3 && state.category && <PrimaryButton className="start-button" onClick={actions.startGame}>Iniciar Missão</PrimaryButton>}
+      {state.players.length >= 3 && state.category && <PrimaryButton className="start-button" onClick={startGame}>Iniciar Missão</PrimaryButton>}
     </motion.section>
   );
 }

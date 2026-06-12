@@ -47,6 +47,7 @@ export function AddPlayerForm({ value, onChange, onSubmit, inputRef }) {
         onChange={(event) => onChange(event.target.value)}
         placeholder="Registrar suspeito..."
         autoComplete="off"
+        enterKeyHint="done"
       />
       <motion.button
         className="add-button"

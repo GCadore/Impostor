@@ -4,10 +4,19 @@ import { pageMotion, PrimaryButton } from '../components/MotionPrimitives.jsx';
 import { AddPlayerForm, PlayerCard } from '../components/PlayerCard.jsx';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
 
+function closeKeyboard() {
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+}
+
+function shouldRefocusInput() {
+  return !window.matchMedia?.('(pointer: coarse)').matches;
+}
+
 export function PlayersScreen({ state, actions }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
+    if (!shouldRefocusInput()) return undefined;
     const timer = setTimeout(() => inputRef.current?.focus(), 100);
     return () => clearTimeout(timer);
   }, []);
@@ -15,7 +24,12 @@ export function PlayersScreen({ state, actions }) {
   function submitPlayer(event) {
     event?.preventDefault();
     actions.addPlayer();
-    setTimeout(() => inputRef.current?.focus(), 50);
+    if (shouldRefocusInput()) setTimeout(() => inputRef.current?.focus(), 50);
+  }
+
+  function goSettings() {
+    closeKeyboard();
+    actions.goSettings();
   }
 
   return (
@@ -56,7 +70,7 @@ export function PlayersScreen({ state, actions }) {
       <AnimatePresence>
         {state.players.length >= 3 && (
           <motion.div className="fixed-bottom" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 18 }}>
-            <PrimaryButton onClick={actions.goSettings}>Montar Caso →</PrimaryButton>
+            <PrimaryButton onClick={goSettings}>Montar Caso →</PrimaryButton>
           </motion.div>
         )}
       </AnimatePresence>
