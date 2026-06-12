@@ -1,0 +1,185 @@
+import { useEffect, useMemo, useReducer } from 'react';
+import { wordBank } from '../data/wordBank.js';
+import { createRound, makeCaseDate, makeCaseId, maxImpostors } from '../utils/game.js';
+
+const STORAGE_KEY = 'impostor_v1';
+
+const initialState = {
+  screen: 'home',
+  players: [],
+  newPlayerName: '',
+  category: null,
+  impostorCount: 1,
+  difficulty: 'misto',
+  haptics: true,
+  currentPlayerIndex: 0,
+  assignments: [],
+  wordRevealed: false,
+  breaking: false,
+  lastPairKey: '',
+  recentPairKeys: [],
+  caseId: '0451-B',
+  caseDate: '',
+};
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return {
+      ...initialState,
+      players: Array.isArray(saved.players) ? saved.players : [],
+      category: saved.category || null,
+      impostorCount: saved.impostorCount || 1,
+      difficulty: saved.difficulty || 'misto',
+      haptics: typeof saved.haptics === 'boolean' ? saved.haptics : true,
+      caseId: saved.caseId || '0451-B',
+      caseDate: saved.caseDate || '',
+      recentPairKeys: Array.isArray(saved.recentPairKeys) ? saved.recentPairKeys.slice(0, 18) : [],
+    };
+  } catch {
+    return initialState;
+  }
+}
+
+function persistedState(state) {
+  return {
+    players: state.players,
+    category: state.category,
+    impostorCount: state.impostorCount,
+    difficulty: state.difficulty,
+    haptics: state.haptics,
+    caseId: state.caseId,
+    caseDate: state.caseDate,
+    recentPairKeys: state.recentPairKeys,
+  };
+}
+
+function gameReducer(state, action) {
+  switch (action.type) {
+    case 'GO_PLAYERS':
+      return {
+        ...state,
+        screen: 'players',
+        players: [],
+        newPlayerName: '',
+        caseId: makeCaseId(),
+        caseDate: makeCaseDate(),
+      };
+    case 'CONTINUE_WITH_PLAYERS':
+      return {
+        ...state,
+        screen: 'settings',
+        caseId: state.caseId || makeCaseId(),
+        caseDate: state.caseDate || makeCaseDate(),
+      };
+    case 'GO_SETTINGS':
+      return state.players.length >= 3 ? { ...state, screen: 'settings' } : state;
+    case 'GO_BACK':
+      if (state.screen === 'settings') return { ...state, screen: 'players' };
+      if (state.screen === 'players') return { ...state, screen: 'home' };
+      return state;
+    case 'SET_NEW_PLAYER_NAME':
+      return { ...state, newPlayerName: action.name };
+    case 'ADD_PLAYER': {
+      const name = state.newPlayerName.trim();
+      if (!name) return state;
+      return { ...state, players: [...state.players, name], newPlayerName: '' };
+    }
+    case 'REMOVE_PLAYER': {
+      const players = state.players.filter((_, index) => index !== action.index);
+      return { ...state, players, impostorCount: Math.min(state.impostorCount, maxImpostors(players.length)) };
+    }
+    case 'SET_CATEGORY':
+      return { ...state, category: action.category };
+    case 'SET_DIFFICULTY':
+      return { ...state, difficulty: action.difficulty };
+    case 'DECREMENT_IMPOSTOR':
+      return { ...state, impostorCount: Math.max(1, state.impostorCount - 1) };
+    case 'INCREMENT_IMPOSTOR':
+      return { ...state, impostorCount: Math.min(maxImpostors(state.players.length), state.impostorCount + 1) };
+    case 'SET_IMPOSTOR_COUNT':
+      return { ...state, impostorCount: Math.min(maxImpostors(state.players.length), Math.max(1, action.count)) };
+    case 'TOGGLE_HAPTICS':
+      return { ...state, haptics: !state.haptics };
+    case 'START_ROUND':
+      return createRound(state, wordBank);
+    case 'BREAK_SEAL':
+      return state.breaking ? state : { ...state, breaking: true };
+    case 'REVEAL_WORD':
+      return { ...state, wordRevealed: true, breaking: false };
+    case 'NEXT_PLAYER': {
+      const isLast = state.currentPlayerIndex >= state.assignments.length - 1;
+      if (isLast) return { ...state, screen: 'discussion' };
+      return {
+        ...state,
+        currentPlayerIndex: state.currentPlayerIndex + 1,
+        wordRevealed: false,
+        breaking: false,
+      };
+    }
+    case 'NEW_GAME':
+      return {
+        ...state,
+        screen: 'home',
+        newPlayerName: '',
+        category: null,
+        impostorCount: 1,
+        assignments: [],
+        currentPlayerIndex: 0,
+        wordRevealed: false,
+        breaking: false,
+      };
+    default:
+      return state;
+  }
+}
+
+export function useGameState() {
+  const [state, dispatch] = useReducer(gameReducer, undefined, loadState);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedState(state)));
+    } catch {
+      // Persistence is optional in private browsing and restricted contexts.
+    }
+  }, [state.players, state.category, state.impostorCount, state.difficulty, state.haptics, state.caseId, state.caseDate, state.recentPairKeys]);
+
+  useEffect(() => {
+    if (!state.breaking) return undefined;
+    const timer = setTimeout(() => dispatch({ type: 'REVEAL_WORD' }), 440);
+    return () => clearTimeout(timer);
+  }, [state.breaking]);
+
+  const actions = useMemo(() => ({
+    goPlayers: () => dispatch({ type: 'GO_PLAYERS' }),
+    continueWithPlayers: () => dispatch({ type: 'CONTINUE_WITH_PLAYERS' }),
+    goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
+    goBack: () => dispatch({ type: 'GO_BACK' }),
+    setNewPlayerName: (name) => dispatch({ type: 'SET_NEW_PLAYER_NAME', name }),
+    addPlayer: () => dispatch({ type: 'ADD_PLAYER' }),
+    removePlayer: (index) => dispatch({ type: 'REMOVE_PLAYER', index }),
+    setCategory: (category) => dispatch({ type: 'SET_CATEGORY', category }),
+    setDifficulty: (difficulty) => dispatch({ type: 'SET_DIFFICULTY', difficulty }),
+    decrementImpostor: () => dispatch({ type: 'DECREMENT_IMPOSTOR' }),
+    incrementImpostor: () => dispatch({ type: 'INCREMENT_IMPOSTOR' }),
+    setImpostorCount: (count) => dispatch({ type: 'SET_IMPOSTOR_COUNT', count }),
+    toggleHaptics: () => dispatch({ type: 'TOGGLE_HAPTICS' }),
+    startGame: () => dispatch({ type: 'START_ROUND' }),
+    breakSeal: () => {
+      if (state.haptics && navigator.vibrate) {
+        try {
+          navigator.vibrate([0, 35, 25, 60]);
+        } catch {
+          // Ignore devices without vibration support.
+        }
+      }
+      dispatch({ type: 'BREAK_SEAL' });
+    },
+    nextPlayer: () => dispatch({ type: 'NEXT_PLAYER' }),
+    playAgain: () => dispatch({ type: 'START_ROUND' }),
+    newGame: () => dispatch({ type: 'NEW_GAME' }),
+  }), [state.haptics]);
+
+  return { state, actions };
+}
