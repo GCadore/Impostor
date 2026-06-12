@@ -66,7 +66,7 @@ export function getSetupStats(bank, category, difficulty, recentPairKeys = []) {
 }
 
 export function createRound(state, bank) {
-  if (state.players.length < 3 || !state.category) return state;
+  if (state.players.length < 3 || !state.category || !bank[state.category]?.length) return state;
 
   const allPairs = bank[state.category];
   const filteredPairs = getPairsForDifficulty(bank, state.category, state.difficulty);

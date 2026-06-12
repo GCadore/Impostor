@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer } from 'react';
-import { wordBank } from '../data/wordBank.js';
+import { difficultyMeta, wordBank, wordModeMeta } from '../data/wordBank.js';
 import { createRound, makeCaseDate, makeCaseId, maxImpostors } from '../utils/game.js';
 
 const STORAGE_KEY = 'impostor_v1';
@@ -23,20 +23,53 @@ const initialState = {
   caseDate: '',
 };
 
+function cleanPlayers(players) {
+  if (!Array.isArray(players)) return [];
+  return players
+    .filter((player) => typeof player === 'string')
+    .map((player) => player.trim())
+    .filter(Boolean)
+    .slice(0, 30);
+}
+
+function cleanCategory(category) {
+  return typeof category === 'string' && wordBank[category] ? category : null;
+}
+
+function cleanDifficulty(difficulty) {
+  return difficultyMeta[difficulty] ? difficulty : initialState.difficulty;
+}
+
+function cleanWordMode(wordMode) {
+  return wordModeMeta[wordMode] ? wordMode : initialState.wordMode;
+}
+
+function cleanImpostorCount(count, playerCount) {
+  const parsed = Number(count);
+  if (!Number.isFinite(parsed)) return initialState.impostorCount;
+  return Math.min(maxImpostors(playerCount), Math.max(1, Math.floor(parsed)));
+}
+
+function cleanRecentPairKeys(keys) {
+  if (!Array.isArray(keys)) return [];
+  return keys.filter((key) => typeof key === 'string' && key.includes(':')).slice(0, 18);
+}
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const players = cleanPlayers(saved.players);
     return {
       ...initialState,
-      players: Array.isArray(saved.players) ? saved.players : [],
-      category: saved.category || null,
-      wordMode: saved.wordMode || 'similar',
-      impostorCount: saved.impostorCount || 1,
-      difficulty: saved.difficulty || 'misto',
+      players,
+      category: cleanCategory(saved.category),
+      wordMode: cleanWordMode(saved.wordMode),
+      impostorCount: cleanImpostorCount(saved.impostorCount, players.length),
+      difficulty: cleanDifficulty(saved.difficulty),
       haptics: typeof saved.haptics === 'boolean' ? saved.haptics : true,
-      caseId: saved.caseId || '0451-B',
-      caseDate: saved.caseDate || '',
-      recentPairKeys: Array.isArray(saved.recentPairKeys) ? saved.recentPairKeys.slice(0, 18) : [],
+      caseId: typeof saved.caseId === 'string' && saved.caseId ? saved.caseId : '0451-B',
+      caseDate: typeof saved.caseDate === 'string' ? saved.caseDate : '',
+      recentPairKeys: cleanRecentPairKeys(saved.recentPairKeys),
     };
   } catch {
     return initialState;
@@ -93,11 +126,11 @@ function gameReducer(state, action) {
       return { ...state, players, impostorCount: Math.min(state.impostorCount, maxImpostors(players.length)) };
     }
     case 'SET_CATEGORY':
-      return { ...state, category: action.category };
+      return { ...state, category: cleanCategory(action.category) };
     case 'SET_WORD_MODE':
-      return { ...state, wordMode: action.wordMode };
+      return { ...state, wordMode: cleanWordMode(action.wordMode) };
     case 'SET_DIFFICULTY':
-      return { ...state, difficulty: action.difficulty };
+      return { ...state, difficulty: cleanDifficulty(action.difficulty) };
     case 'DECREMENT_IMPOSTOR':
       return { ...state, impostorCount: Math.max(1, state.impostorCount - 1) };
     case 'INCREMENT_IMPOSTOR':
@@ -174,6 +207,7 @@ export function useGameState() {
     toggleHaptics: () => dispatch({ type: 'TOGGLE_HAPTICS' }),
     startGame: () => dispatch({ type: 'START_ROUND' }),
     breakSeal: () => {
+      if (state.breaking) return;
       if (state.haptics && navigator.vibrate) {
         try {
           navigator.vibrate([0, 35, 25, 60]);
@@ -186,7 +220,7 @@ export function useGameState() {
     nextPlayer: () => dispatch({ type: 'NEXT_PLAYER' }),
     playAgain: () => dispatch({ type: 'START_ROUND' }),
     newGame: () => dispatch({ type: 'NEW_GAME' }),
-  }), [state.haptics]);
+  }), [state.breaking, state.haptics]);
 
   return { state, actions };
 }

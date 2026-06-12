@@ -666,17 +666,24 @@ input:focus {
 }
 
 .mode-grid {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
   gap: 8px;
   margin-bottom: 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 0 2px 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mode-card {
   position: relative;
+  flex: 0 0 72%;
+  min-height: 70px;
   background: #1f1a12;
   border: 1.5px solid #2a251c;
   border-radius: 3px;
+  scroll-snap-align: start;
 }
 
 .mode-hint {
@@ -685,7 +692,15 @@ input:focus {
 
 @media (min-width: 390px) {
   .mode-grid {
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
+    overflow: visible;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+  }
+
+  .mode-card {
+    flex-basis: auto;
   }
 
   .mode-card strong {
@@ -1115,11 +1130,11 @@ input:focus {
 }
 
 .board-svg-strings {
-  z-index: 1;
+  z-index: 3;
 }
 
 .board-svg-pins {
-  z-index: 3;
+  z-index: 4;
 }
 
 .board-card {
@@ -1212,6 +1227,13 @@ input:focus {
 
 .discussion-actions .button {
   max-width: none;
+}
+
+.discussion-actions .button.secondary {
+  background: rgba(31, 26, 18, 0.96);
+  border-color: rgba(232, 223, 202, 0.34);
+  color: #e8dfca;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.28);
 }
 
 @media (pointer: coarse) {
