@@ -632,20 +632,23 @@ input:focus {
   margin-bottom: 8px;
 }
 
-.difficulty-card {
+.difficulty-card,
+.mode-card {
   flex: 1;
   padding: 12px 4px 11px;
   color: #7a715a;
   text-align: center;
 }
 
-.difficulty-card.selected {
+.difficulty-card.selected,
+.mode-card.selected {
   background: #241d13;
   border-color: #d4321e;
   color: #e8dfca;
 }
 
-.difficulty-card strong {
+.difficulty-card strong,
+.mode-card strong {
   display: block;
   font-family: 'Anton', sans-serif;
   font-size: 17px;
@@ -653,12 +656,41 @@ input:focus {
   text-transform: uppercase;
 }
 
-.difficulty-card span {
+.difficulty-card span,
+.mode-card span {
   display: block;
   margin-top: 2px;
   font-size: 9px;
   letter-spacing: 0.5px;
   opacity: 0.7;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mode-card {
+  position: relative;
+  background: #1f1a12;
+  border: 1.5px solid #2a251c;
+  border-radius: 3px;
+}
+
+.mode-hint {
+  margin-bottom: 30px;
+}
+
+@media (min-width: 390px) {
+  .mode-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .mode-card strong {
+    font-size: 14px;
+  }
 }
 
 .settings-hint {

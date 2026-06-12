@@ -9,6 +9,7 @@ const initialState = {
   players: [],
   newPlayerName: '',
   category: null,
+  wordMode: 'similar',
   impostorCount: 1,
   difficulty: 'misto',
   haptics: true,
@@ -29,6 +30,7 @@ function loadState() {
       ...initialState,
       players: Array.isArray(saved.players) ? saved.players : [],
       category: saved.category || null,
+      wordMode: saved.wordMode || 'similar',
       impostorCount: saved.impostorCount || 1,
       difficulty: saved.difficulty || 'misto',
       haptics: typeof saved.haptics === 'boolean' ? saved.haptics : true,
@@ -45,6 +47,7 @@ function persistedState(state) {
   return {
     players: state.players,
     category: state.category,
+    wordMode: state.wordMode,
     impostorCount: state.impostorCount,
     difficulty: state.difficulty,
     haptics: state.haptics,
@@ -91,6 +94,8 @@ function gameReducer(state, action) {
     }
     case 'SET_CATEGORY':
       return { ...state, category: action.category };
+    case 'SET_WORD_MODE':
+      return { ...state, wordMode: action.wordMode };
     case 'SET_DIFFICULTY':
       return { ...state, difficulty: action.difficulty };
     case 'DECREMENT_IMPOSTOR':
@@ -123,6 +128,7 @@ function gameReducer(state, action) {
         screen: 'home',
         newPlayerName: '',
         category: null,
+        wordMode: 'similar',
         impostorCount: 1,
         assignments: [],
         currentPlayerIndex: 0,
@@ -143,7 +149,7 @@ export function useGameState() {
     } catch {
       // Persistence is optional in private browsing and restricted contexts.
     }
-  }, [state.players, state.category, state.impostorCount, state.difficulty, state.haptics, state.caseId, state.caseDate, state.recentPairKeys]);
+  }, [state.players, state.category, state.wordMode, state.impostorCount, state.difficulty, state.haptics, state.caseId, state.caseDate, state.recentPairKeys]);
 
   useEffect(() => {
     if (!state.breaking) return undefined;
@@ -160,6 +166,7 @@ export function useGameState() {
     addPlayer: () => dispatch({ type: 'ADD_PLAYER' }),
     removePlayer: (index) => dispatch({ type: 'REMOVE_PLAYER', index }),
     setCategory: (category) => dispatch({ type: 'SET_CATEGORY', category }),
+    setWordMode: (wordMode) => dispatch({ type: 'SET_WORD_MODE', wordMode }),
     setDifficulty: (difficulty) => dispatch({ type: 'SET_DIFFICULTY', difficulty }),
     decrementImpostor: () => dispatch({ type: 'DECREMENT_IMPOSTOR' }),
     incrementImpostor: () => dispatch({ type: 'INCREMENT_IMPOSTOR' }),

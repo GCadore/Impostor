@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { pageMotion, PrimaryButton } from '../components/MotionPrimitives.jsx';
 import { ScreenHeader, SectionLabel } from '../components/ScreenHeader.jsx';
-import { CaseCover, CategorySelector, DifficultySelector, HapticsToggle, ImpostorCounter } from '../components/SettingsParts.jsx';
+import { CaseCover, CategorySelector, DifficultySelector, HapticsToggle, ImpostorCounter, WordModeSelector } from '../components/SettingsParts.jsx';
 
 export function SettingsScreen({ state, actions }) {
   function startGame() {
@@ -25,6 +25,9 @@ export function SettingsScreen({ state, actions }) {
         recentPairKeys={state.recentPairKeys}
         onSelect={actions.setDifficulty}
       />
+
+      <SectionLabel>MODO DO IMPOSTOR</SectionLabel>
+      <WordModeSelector selectedMode={state.wordMode} onSelect={actions.setWordMode} />
 
       <SectionLabel>INFILTRADOS</SectionLabel>
       <ImpostorCounter

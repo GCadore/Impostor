@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { CategoryIcon } from './icons.jsx';
-import { categoryMeta, difficultyMeta, wordBank } from '../data/wordBank.js';
+import { categoryMeta, difficultyMeta, wordBank, wordModeMeta } from '../data/wordBank.js';
 import { getSetupStats, recommendedImpostors } from '../utils/game.js';
 
 export function CaseCover({ caseId, caseDate, playerCount, impostorCount }) {
@@ -82,6 +82,32 @@ export function DifficultySelector({ selectedCategory, selectedDifficulty, recen
           {stats.isLowStock && <span>Troque a dificuldade ou categoria para evitar repetições.</span>}
         </div>
       )}
+    </>
+  );
+}
+
+export function WordModeSelector({ selectedMode, onSelect }) {
+  const selectMode = (wordMode) => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    onSelect(wordMode);
+  };
+
+  return (
+    <>
+      <div className="mode-grid">
+        {Object.entries(wordModeMeta).map(([key, meta]) => (
+          <motion.button
+            key={key}
+            className={`mode-card ${selectedMode === key ? 'selected' : ''}`}
+            onClick={() => selectMode(key)}
+            whileTap={{ scale: 0.97 }}
+          >
+            <strong>{meta.label}</strong>
+            <span>{meta.hint}</span>
+          </motion.button>
+        ))}
+      </div>
+      <p className="settings-hint mode-hint">{wordModeMeta[selectedMode].info}</p>
     </>
   );
 }

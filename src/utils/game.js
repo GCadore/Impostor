@@ -85,7 +85,8 @@ export function createRound(state, bank) {
 
   const swapWords = Math.random() > 0.5;
   const citizenWord = swapWords ? selectedPair.w[1] : selectedPair.w[0];
-  const impostorWord = swapWords ? selectedPair.w[0] : selectedPair.w[1];
+  const similarWord = swapWords ? selectedPair.w[0] : selectedPair.w[1];
+  const impostorWord = getImpostorWord(state.wordMode, state.category, similarWord);
   const shuffledPlayers = [...state.players].sort(() => Math.random() - 0.5);
   const impostorSet = new Set();
 
@@ -99,6 +100,9 @@ export function createRound(state, bank) {
     assignments: shuffledPlayers.map((name, index) => ({
       name,
       word: impostorSet.has(index) ? impostorWord : citizenWord,
+      citizenWord,
+      impostorWord,
+      wordMode: state.wordMode || 'similar',
       isImpostor: impostorSet.has(index),
     })),
     currentPlayerIndex: 0,
@@ -107,6 +111,12 @@ export function createRound(state, bank) {
     lastPairKey: selectedPairKey,
     recentPairKeys: [selectedPairKey, ...recentPairKeys.filter((key) => key !== selectedPairKey)].slice(0, 18),
   };
+}
+
+function getImpostorWord(wordMode, category, similarWord) {
+  if (wordMode === 'context') return `Tema: ${category}`;
+  if (wordMode === 'blank') return 'Sem palavra';
+  return similarWord;
 }
 
 export function buildBoard(assignments, caseId) {

@@ -109,3 +109,21 @@ export const difficultyMeta = {
   misto: { label: 'Misto', hint: 'aleatório', info: 'Mistura de pares fáceis e difíceis.' },
   dificil: { label: 'Difícil', hint: 'quase iguais', info: 'Palavras quase idênticas - disfarce quase perfeito.' },
 };
+
+export const wordModeMeta = {
+  similar: {
+    label: 'Palavra parecida',
+    hint: 'clássico',
+    info: 'O impostor recebe uma palavra próxima da palavra dos agentes.',
+  },
+  context: {
+    label: 'Contexto',
+    hint: 'tema apenas',
+    info: 'O impostor sabe só o tema do caso, sem receber a palavra exata.',
+  },
+  blank: {
+    label: 'Sem palavra',
+    hint: 'sem pista',
+    info: 'O impostor não recebe palavra nem contexto. É o modo mais caótico.',
+  },
+};

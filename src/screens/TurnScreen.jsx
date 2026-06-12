@@ -35,6 +35,7 @@ function HiddenTurn({ state, actions, assignment }) {
 function RevealedTurn({ state, actions, assignment, isLast }) {
   const { typedText, isTyping } = useTypewriter(assignment.word, `${state.currentPlayerIndex}-word-${state.wordRevealed}`);
   const accent = assignment.isImpostor ? '#d4321e' : '#8fc04f';
+  const wordLabel = assignment.isImpostor && assignment.wordMode === 'context' ? 'SUA PISTA' : 'SUA PALAVRA-CHAVE';
 
   return (
     <motion.section className="screen turn-screen revealed" {...pageMotion} style={{ '--accent': accent }}>
@@ -47,12 +48,12 @@ function RevealedTurn({ state, actions, assignment, isLast }) {
         {assignment.isImpostor ? 'IMPOSTOR' : 'AGENTE'}
       </motion.div>
 
-      <div className="word-label">SUA PALAVRA-CHAVE</div>
+      <div className="word-label">{wordLabel}</div>
       <h2 className="secret-word">{typedText}{isTyping && <Caret color={accent} />}</h2>
 
       {assignment.isImpostor ? (
         <motion.p className="impostor-note" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          Disfarce-se. Sua palavra é parecida - finja que tem a mesma de todos.
+          {impostorNote(assignment.wordMode)}
         </motion.p>
       ) : <div className="note-space" />}
 
@@ -62,6 +63,12 @@ function RevealedTurn({ state, actions, assignment, isLast }) {
       <div className="memorize">MEMORIZE E PASSE ADIANTE</div>
     </motion.section>
   );
+}
+
+function impostorNote(wordMode) {
+  if (wordMode === 'context') return 'Você só conhece o tema. Observe as pistas e finja saber a palavra exata.';
+  if (wordMode === 'blank') return 'Você não recebeu palavra. Blefe, escute os outros e tente sobreviver.';
+  return 'Disfarce-se. Sua palavra é parecida - finja que tem a mesma de todos.';
 }
 
 function Caret({ color = '#d4321e' }) {
