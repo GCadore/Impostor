@@ -35,6 +35,7 @@ export type GameState = {
   assignments: Assignment[];
   wordRevealed: boolean;
   breaking: boolean;
+  passing: boolean;
   lastPairKey: string;
   recentPairKeys: string[];
   caseId: string;
@@ -59,6 +60,7 @@ export type GameActions = {
   startGame: () => void;
   breakSeal: () => void;
   nextPlayer: () => void;
+  confirmPass: () => void;
   playAgain: () => void;
   newGame: () => void;
 };

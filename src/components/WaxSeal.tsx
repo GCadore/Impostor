@@ -20,6 +20,8 @@ export function WaxSeal({ breaking, monogram, onBreak }: WaxSealProps) {
     <motion.button
       className="sealed-dossier"
       onClick={onBreak}
+      disabled={breaking}
+      aria-label="Romper lacre do dossiê"
       animate={breaking ? dossierBreak : { x: 0, rotate: 0, opacity: 1 }}
       transition={{ duration: 0.24, ease: easeOut }}
       whileTap={reduceMotion ? { scale: 0.99 } : { scale: 0.975, rotate: -0.4 }}

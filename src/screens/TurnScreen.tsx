@@ -9,12 +9,45 @@ import type { Assignment, GameActions, GameState, ScreenProps, WordMode } from '
 export function TurnScreen({ state, actions }: ScreenProps) {
   const assignment = state.assignments[state.currentPlayerIndex];
   const isLast = state.currentPlayerIndex >= state.assignments.length - 1;
+  const nextAssignment = state.assignments[state.currentPlayerIndex + 1];
 
   if (!assignment) return null;
+
+  if (state.passing) {
+    return <PassingScreen actions={actions} nextName={nextAssignment?.name ?? null} isLast={isLast} />;
+  }
 
   return state.wordRevealed
     ? <RevealedTurn state={state} actions={actions} assignment={assignment} isLast={isLast} />
     : <HiddenTurn state={state} actions={actions} assignment={assignment} />;
+}
+
+function PassingScreen({ actions, nextName, isLast }: { actions: GameActions; nextName: string | null; isLast: boolean }) {
+  const reduceMotion = useReducedMotion() === true;
+
+  return (
+    <motion.section
+      className="screen turn-screen passing-screen"
+      variants={reduceMotion ? reducedPageStagger : pageStagger}
+      initial="hidden"
+      animate="show"
+      exit="exit"
+    >
+      <motion.div className="sigiloso-stamp" variants={fadeLift}>TRANSFERÊNCIA</motion.div>
+      <motion.div className="handoff-label" variants={fadeLift}>PASSE O CELULAR PARA</motion.div>
+      <motion.h2 className="handoff-name" variants={fadeLift}>
+        {isLast ? 'encerrar' : (nextName ?? '—')}
+      </motion.h2>
+      <motion.p className="handoff-warning" variants={fadeLift}>
+        {isLast ? 'O último agente foi. Toque para iniciar o interrogatório.' : 'Somente o próximo agente deve tocar para continuar.'}
+      </motion.p>
+      <motion.div variants={fadeLift} className="next-button-wrap">
+        <SecondaryButton className="next-button" onClick={actions.confirmPass}>
+          {isLast ? 'Iniciar Interrogatório' : 'Estou pronto →'}
+        </SecondaryButton>
+      </motion.div>
+    </motion.section>
+  );
 }
 
 function HiddenTurn({ state, actions, assignment }: { state: GameState; actions: GameActions; assignment: Assignment }) {

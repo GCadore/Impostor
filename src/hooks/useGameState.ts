@@ -18,6 +18,7 @@ const initialState: GameState = {
   assignments: [],
   wordRevealed: false,
   breaking: false,
+  passing: false,
   lastPairKey: '',
   recentPairKeys: [],
   caseId: '0451-B',
@@ -120,6 +121,7 @@ type GameAction =
   | { type: 'BREAK_SEAL' }
   | { type: 'REVEAL_WORD' }
   | { type: 'NEXT_PLAYER' }
+  | { type: 'CONFIRM_PASS' }
   | { type: 'NEW_GAME' };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -138,6 +140,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentPlayerIndex: 0,
         wordRevealed: false,
         breaking: false,
+        passing: false,
         lastPairKey: '',
         caseId: makeCaseId(),
         caseDate: makeCaseDate(),
@@ -186,11 +189,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return state.breaking ? state : { ...state, breaking: true };
     case 'REVEAL_WORD':
       return { ...state, wordRevealed: true, breaking: false };
-    case 'NEXT_PLAYER': {
+    case 'NEXT_PLAYER':
+      return { ...state, passing: true };
+    case 'CONFIRM_PASS': {
       const isLast = state.currentPlayerIndex >= state.assignments.length - 1;
-      if (isLast) return { ...state, screen: 'discussion' };
+      if (isLast) return { ...state, passing: false, screen: 'discussion' };
       return {
         ...state,
+        passing: false,
         currentPlayerIndex: state.currentPlayerIndex + 1,
         wordRevealed: false,
         breaking: false,
@@ -259,6 +265,7 @@ export function useGameState(): { state: GameState; actions: GameActions } {
       dispatch({ type: 'BREAK_SEAL' });
     },
     nextPlayer: () => dispatch({ type: 'NEXT_PLAYER' }),
+    confirmPass: () => dispatch({ type: 'CONFIRM_PASS' }),
     playAgain: () => dispatch({ type: 'START_ROUND' }),
     newGame: () => dispatch({ type: 'NEW_GAME' }),
   }), [state.breaking, state.haptics]);
